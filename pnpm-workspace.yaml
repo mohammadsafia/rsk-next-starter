@@ -1,0 +1,14 @@
+onlyBuiltDependencies:
+  - '@swc/core'
+  - esbuild
+overrides:
+  '@radix-ui/react-direction': $@radix-ui/react-direction
+  vite@*: 'catalog:'
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@1.2.0
+  vite-plus: 1.2.0
+peerDependencyRules:
+  allowAny:
+    - vite
+  allowedVersions:
+    vite: '*'

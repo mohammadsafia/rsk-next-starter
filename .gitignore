@@ -1,0 +1,65 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+*.tsbuildinfo
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+aws-logger-errors.txt
+
+.env.local
+
+# Temporary API generation files
+temp-api-types/
+
+.github/git-commit-instructions.md
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+/docs
+.idea
+.superpowers/
+/dist
+dist-docs
+# Playwright MCP artifacts
+.playwright-mcp/
+.playwright-cli/
+
+i18n-*.png
+.vitest/
+
+# Generated app starter (pnpm starter:build)
+/.starter
+
+# pnpm a11y:audit output
+a11y-report.json
+first-load-report.json
+visual-report/
+test-results/
+
+# Local settings: copy .env.example to .env
+.env
+!.env.example
+
+# Next.js
+.next/
+next-env.d.ts

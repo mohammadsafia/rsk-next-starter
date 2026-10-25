@@ -1,0 +1,116 @@
+/*
+ * Motion modes (spec docs/superpowers/specs/2026-10-17-motion-design.md §3). MotionProvider writes data-motion on <html>.
+ * expressive is the default (tokens.css values). reduced comes from the OS setting and is handled by the global
+ * prefers-reduced-motion rules in utilities.css; JS-driven motion reads the mode from useMotion().
+ */
+:root[data-motion='calm'] {
+  --motion-ease-spring: var(--ease-out);
+  --motion-stagger: 0ms;
+  --motion-reveal-stagger: 0ms;
+  --motion-depth: 0;
+}
+
+/* Skeleton shimmer (utilities.css): one sweep of the ink band across the placeholder. */
+:root {
+  --motion-shimmer-period: 1.6s;
+}
+
+@keyframes rsk-shimmer {
+  from {
+    background-position: -100% 0;
+  }
+
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* A checkbox's check drawing itself (draw-check in utilities.css). */
+@keyframes rsk-stroke {
+  from {
+    stroke-dashoffset: 24;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The toast timer: its heavy top rule drains over the auto-close time (Toast.tsx). */
+@keyframes rsk-drain {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Page depth: while a modal surface is open, the app shell recedes behind it; it returns as the last one starts closing. */
+[data-slot='app-shell'] {
+  transform-origin: 50% 0;
+  transition: scale var(--duration-exit) var(--ease-in);
+}
+
+:root:has([data-slot='dialog-content'][data-state='open'], [data-slot='sheet-content'][data-state='open']) [data-slot='app-shell'] {
+  scale: calc(1 - var(--motion-depth));
+  transition: scale var(--duration-spring) var(--ease-spring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='app-shell'] {
+    scale: none !important;
+  }
+}
+
+/*
+ * Theme switch: ThemeContext swaps the theme inside a view transition, so the browser paints the old and new pages as
+ * two snapshots and every pixel changes together. The new theme spreads as a circle from where the switch was pressed
+ * (--theme-reveal-*); calm mode cross-fades instead. ThemeContext holds .theme-switching for the length of it. Never on load, and reduced motion switches at once (ThemeContext
+ * skips the transition).
+ */
+/* The new snapshot is live: while the theme swaps, elements' own colour transitions are frozen so none fades in it. */
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: rsk-theme-reveal var(--duration-roll) var(--ease-out);
+}
+
+:root[data-motion='calm']::view-transition-new(root) {
+  animation: rsk-theme-fade var(--duration-slow) var(--ease-out);
+}
+
+@keyframes rsk-theme-reveal {
+  from {
+    clip-path: circle(0 at var(--theme-reveal-x, 50%) var(--theme-reveal-y, 50%));
+  }
+
+  to {
+    clip-path: circle(var(--theme-reveal-r, 150%) at var(--theme-reveal-x, 50%) var(--theme-reveal-y, 50%));
+  }
+}
+
+@keyframes rsk-theme-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
