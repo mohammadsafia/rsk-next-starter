@@ -7,12 +7,16 @@ import enCommon from './en/common.json';
 import enDashboard from './en/dashboard.json';
 import enErrors from './en/errors.json';
 import enHeader from './en/header.json';
+import enLanding from './en/landing.json';
+import enMembers from './en/members.json';
 import enNav from './en/nav.json';
 import arAuth from './ar/auth.json';
 import arCommon from './ar/common.json';
 import arDashboard from './ar/dashboard.json';
 import arErrors from './ar/errors.json';
 import arHeader from './ar/header.json';
+import arLanding from './ar/landing.json';
+import arMembers from './ar/members.json';
 import arNav from './ar/nav.json';
 
 const EN: ResourceLanguage = {
@@ -21,6 +25,8 @@ const EN: ResourceLanguage = {
   dashboard: enDashboard,
   errors: enErrors,
   header: enHeader,
+  landing: enLanding,
+  members: enMembers,
   nav: enNav,
 };
 
@@ -30,6 +36,8 @@ const AR: ResourceLanguage = {
   dashboard: arDashboard,
   errors: arErrors,
   header: arHeader,
+  landing: arLanding,
+  members: arMembers,
   nav: arNav,
 };
 
