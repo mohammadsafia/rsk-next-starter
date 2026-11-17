@@ -3,11 +3,19 @@
 
 @import './styles/palette.css';
 @import './styles/tokens.css';
+@import './app-config/accent.css';
 @import './styles/theme.css';
 @import './styles/utilities.css';
 @import './styles/motion.css';
 
 @custom-variant dark (&:is(.dark *));
+
+/* The families the imports above register; theme.css builds the per-glyph stacks (Latin, then Arabic) from them. */
+:root {
+  --font-brand-sans: 'Schibsted Grotesk Variable';
+  --font-brand-arabic: 'Noto Kufi Arabic Variable';
+  --font-brand-mono: 'Spline Sans Mono Variable';
+}
 
 @layer base {
   body {

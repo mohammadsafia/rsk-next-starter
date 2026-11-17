@@ -16,7 +16,7 @@ import { Conditional } from '@components/utils';
 
 import { useAppTranslation, useDebounce } from '@hooks/shared';
 
-import { cn } from '@utils';
+import { cn, mergeRefs } from '@utils';
 
 import { Clock4Icon, XIcon } from 'lucide-react';
 
@@ -74,6 +74,9 @@ export type TimePickerProps = FieldVariants & {
   step?: number;
   startAt?: string;
   invalid?: boolean;
+  /** Names the field, e.g. its label's id. Without it (or aria-label), the trigger is named by its own text. */
+  'aria-labelledby'?: string;
+  'aria-label'?: string;
   'aria-describedby'?: string;
   'aria-required'?: boolean;
 };
@@ -111,7 +114,7 @@ function TimeColumn<TValue extends number | string>({ label, options, selected, 
       role="listbox"
       aria-label={label}
       data-slot="time-picker-column"
-      className="flex max-h-48 w-12 [scrollbar-width:thin] flex-col gap-0.5 overflow-y-auto font-mono text-sm"
+      className="flex max-h-56 w-12 [scrollbar-width:thin] flex-col gap-0.5 overflow-y-auto font-mono text-sm"
     >
       {options.map((option, index) => (
         <button
@@ -122,7 +125,7 @@ function TimeColumn<TValue extends number | string>({ label, options, selected, 
           tabIndex={option.value === selected ? 0 : -1}
           ref={option.value === selected ? scrollSelectedIntoView : undefined}
           className={cn(
-            'focus-ring text-fg-muted hover:bg-hover hover:text-fg h-7 shrink-0 cursor-pointer rounded-md tabular-nums transition-colors',
+            'focus-ring text-fg-muted hover:bg-hover hover:text-fg h-control-md pointer-coarse:h-11 shrink-0 cursor-pointer rounded-md tabular-nums transition-colors',
             'aria-selected:text-fg aria-selected:ink',
           )}
           onClick={() => onSelect(option.value)}
@@ -165,12 +168,19 @@ const TimePickerTrigger: FC<TimePickerTriggerProps> = ({
   ...props
 }) => {
   // role="combobox" isn't named by its content (as Combobox's trigger): without a label, its own visible text names it.
+  // A <label htmlFor> must win over that fallback, and only the DOM knows whether one points here.
   const textId = useId();
-  const labelledBy = props['aria-labelledby'] ?? (props['aria-label'] ? undefined : textId);
+  const [hasLabelElement, setHasLabelElement] = useState(false);
+  const labelRef = (node: HTMLButtonElement | null) => {
+    const labelled = (node?.labels?.length ?? 0) > 0;
+    if (node && labelled !== hasLabelElement) setHasLabelElement(labelled);
+  };
+  const namedElsewhere = !!props['aria-label'] || hasLabelElement;
+  const labelledBy = props['aria-labelledby'] ?? (namedElsewhere ? undefined : textId);
 
   return (
     <button
-      ref={ref}
+      ref={mergeRefs(ref, labelRef)}
       type="button"
       // A field that opens a panel of options, like Select's trigger: combobox also supports aria-invalid (button doesn't).
       role="combobox"
@@ -262,7 +272,8 @@ const TimePickerColumns: FC<TimePickerColumnsProps> = ({ available, selected, us
   const periodOptions = columns.periods.map((period) => ({ label: period, value: period }));
 
   return (
-    <div className="flex gap-1">
+    // A time reads hours, minutes, AM/PM from left to right in every language (the field shows it the same way).
+    <div dir="ltr" className="flex gap-1">
       <TimeColumn
         label={labels.hours}
         options={columns.hours}
@@ -318,6 +329,8 @@ const TimePicker: TimePickerComponent = ({
   value,
   onChange,
   invalid = false,
+  'aria-labelledby': ariaLabelledBy,
+  'aria-label': ariaLabel,
   'aria-describedby': ariaDescribedBy,
   'aria-required': ariaRequired,
 }) => {
@@ -361,6 +374,8 @@ const TimePicker: TimePickerComponent = ({
         <Popover.Trigger id={id ?? name} asChild>
           <TimePickerTrigger
             size={size}
+            aria-labelledby={ariaLabelledBy}
+            aria-label={ariaLabel}
             aria-describedby={ariaDescribedBy}
             aria-required={ariaRequired}
             invalid={invalid}

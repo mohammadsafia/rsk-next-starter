@@ -16,6 +16,34 @@ const renderPicker = (props: Partial<Parameters<typeof TimePicker>[0]> = {}) =>
   );
 
 describe('TimePicker', () => {
+  it('keeps hours, minutes and AM/PM in reading order in Arabic too: a time is written left to right', async () => {
+    // In an rtl page the columns used to mirror (AM/PM, minutes, hours), against the "10:30 AM" shown in the field.
+    render(
+      <div dir="rtl">
+        <Tooltip.Provider>
+          <TimePicker name="time" value="10:30 AM" />
+        </Tooltip.Provider>
+      </div>,
+    );
+    fireEvent.click(screen.getByRole('combobox'));
+    const hours = await screen.findByRole('listbox', { name: 'Hours' });
+    const columns = hours.parentElement!;
+    expect(columns.getAttribute('dir')).toBe('ltr');
+    expect([...columns.querySelectorAll('[role=listbox]')].map((list) => list.getAttribute('aria-label'))).toEqual([
+      'Hours',
+      'Minutes',
+      'AM or PM',
+    ]);
+  });
+
+  it('gives each option the kit’s control height, and a 44px target on touch screens', async () => {
+    renderPicker({ use24hFormat: true, value: '10:00' });
+    fireEvent.click(screen.getByRole('combobox'));
+    const option = within(await screen.findByRole('listbox', { name: 'Hours' })).getByRole('option', { name: '10' });
+    expect(option.className).toContain('h-control-md');
+    expect(option.className).toContain('pointer-coarse:h-11');
+  });
+
   it('emits "10:30" after picking 10 and 30 in 24h mode', async () => {
     const handleChange = vi.fn();
     renderPicker({ use24hFormat: true, onChange: handleChange });
@@ -59,6 +87,28 @@ describe('TimePicker', () => {
     expect(tabbable.map((option) => option.textContent)).toEqual(['10']);
     fireEvent.keyDown(tabbable[0], { key: 'ArrowDown' });
     expect(within(hours).getByRole('option', { name: '11' }).getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('is named by a <label htmlFor> pointing at its id, as the docs show', async () => {
+    render(
+      <Tooltip.Provider>
+        <label htmlFor="visit-time">Visit time</label>
+        <TimePicker id="visit-time" name="visit-time" value="10:30" use24hFormat />
+      </Tooltip.Provider>,
+    );
+    expect(await screen.findByRole('combobox', { name: 'Visit time' })).toBeTruthy();
+  });
+
+  it('is named by aria-labelledby, and by its own text only when nothing else names it', () => {
+    render(
+      <Tooltip.Provider>
+        <span id="arrival-label">Expected arrival time</span>
+        <TimePicker name="arrival" aria-labelledby="arrival-label" value="10:30" use24hFormat />
+        <TimePicker name="loose" value="11:15" use24hFormat />
+      </Tooltip.Provider>,
+    );
+    expect(screen.getByRole('combobox', { name: 'Expected arrival time' }).textContent).toContain('10:30');
+    expect(screen.getByRole('combobox', { name: '11:15' })).toBeTruthy();
   });
 
   it('snaps an off-range seed onto the grid so confirm emits what is shown', () => {
